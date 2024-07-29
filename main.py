@@ -2,9 +2,9 @@ import spidev
 
 num_pixels = 120
 brightness = 0  # Range of brightness is 0-31
-red = 255
-green = 255
-blue = 255
+red = 163
+green = 28
+blue = 109
 
 spi = spidev.SpiDev()
 spi.open(0, 0)
