@@ -1,32 +1,24 @@
-import spidev
+import asyncio
+from dotstar_controller import DotStar, Pixel_Colours
 
-num_pixels = 120
-brightness = 0  # Range of brightness is 0-31
-red = 163
-green = 28
-blue = 109
+NUM_PIXELS = 120
 
-spi = spidev.SpiDev()
-spi.open(0, 0)
-spi.max_speed_hz = 5000000
+ds_control = DotStar(NUM_PIXELS)
 
-# Create an empty payload
-data = [0x00, 0x00, 0x00, 0x00]
+async def main():
+    # while (1):
+    #     ds_control.set_solid_rgb(red_pix)
+    #     print("Red")
+    #     time.sleep(5)
+    #     ds_control.set_solid_rgb(green_pix)
+    #     print("Green")
+    #     time.sleep(5)
+    #     ds_control.set_solid_rgb(blue_pix)
+    #     print("Blue")
+    #     time.sleep(5)
+    # ds_control.set_solid_rgb(DotStar_Colours.blue)
+    await ds_control.fire_laser(Pixel_Colours.get("blue"), Pixel_Colours.get("red"), 3, 10, 1)
+    await ds_control.set_solid_rgb(Pixel_Colours.get("off"))
 
-# Set up the color of each LED in the chain
-for i in range(num_pixels):
-    data.append(
-        0b11100000 | brightness)  # The first three bits must be 1, and the last five bits control the brightness
-    data.append(blue)  # Blue color first
-    data.append(green)  # Green color second
-    data.append(red)  # Red color last
-
-# End frame of 32 zero bits (0x00)
-data.append(0x00)
-data.append(0x00)
-data.append(0x00)
-data.append(0x00)
-data.append(0x00)
-
-# Send data
-spi.xfer2(data)
+if __name__ == '__main__':
+    asyncio.run(main())
