@@ -28,6 +28,11 @@ Pixel_Colours = {
     "warm white": DotStar_Pixel(2, 239, 235, 216)
 }
 
+class DCState:
+    INIT = 0
+    OFF = 1
+    ON = 2
+
 
 class DotStar:
     def __init__(self, pixel_count):
@@ -35,6 +40,10 @@ class DotStar:
         self.spi = spidev.SpiDev()
         self.spi.open(0, 0)
         self.spi.max_speed_hz = 10000000
+        self.state = DCState.OFF
+        self.last_state = DCState.INIT
+        self.diag = 0
+        self.rainbow = False
 
         logging.debug("Dotstar initialized")
 
@@ -110,7 +119,7 @@ class DotStar:
 
         step = 0  # Starting step
 
-        while True:
+        while self.rainbow:
             pix_list = []
             brightness = 10
 
@@ -149,5 +158,11 @@ class DotStar:
         """
         This is the control loop for the DotStar Controller
         """
-        await self.set_solid_rgb(Pixel_Colours.get("off"))
-        await self.scroll_rainbow(10)
+        print(f"Diag: {self.diag}")
+        self.diag += 1
+
+        if self.state == DCState.OFF:
+            await self.set_solid_rgb(Pixel_Colours.get("off"))
+        if self.state == DCState.ON:
+            self.rainbow = True
+            await self.scroll_rainbow(10)
