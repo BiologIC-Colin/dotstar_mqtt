@@ -41,7 +41,9 @@ async def star_control(ds_control):
 
 async def message_run(ds_control):
     ds_control.state=DCState.OFF
-
+    await asyncio.sleep(5)
+    # ds_control.state=DCState.ON
+    # await asyncio.sleep(5)
 
 async def star_message(ds_control):
     logger.info("Star Msg Control")
