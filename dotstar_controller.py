@@ -32,7 +32,7 @@ class DotStar:
         self.spi.max_speed_hz = 5000000
 
     def _add_EoF(self, data: list[int]):
-        end_count = math.ceil(self.pixel_count/2)
+        end_count = 8
         for i in range(end_count):
             data.append(0x00)
         return data
@@ -48,16 +48,17 @@ class DotStar:
     async def fire_laser(self, background: DotStar_Pixel, pulseColour: DotStar_Pixel, ShotSize: int, Speed: int,
                    Direction: int):
 
-        # Set an Index
-        index = 1
-        # Create the pulse frame
+        # Needs to run until the shot is off the top
+        run_length = self.pixel_count+(ShotSize) #
+        # Set an Index to the first pixel of the run
+        index = 0 - (ShotSize-1)
+        # Set the first frame so the first pixel of the shot is on pixel 1
         pulse_frame = [pulseColour.get_pixel() for _ in range(ShotSize)]
         frame = pulse_frame + [background.get_pixel() for _ in range(self.pixel_count - ShotSize)]
-        await self._update_strip(frame)
 
-
-
-
+        while index < run_length:
+            await self._update_strip(frame)
+            await asyncio.sleep(Speed/self.pixel_count)
 
 
     async def _update_strip(self, pix_list):
@@ -65,11 +66,9 @@ class DotStar:
         Method to update LED strip based on colors in pixel_colors list
         """
         data = dotStar_start_frame
-
-        for i in range(len(pix_list)):
-            myPixel = pix_list[i]
+        length = len(pix_list)
+        for i in range(length):
             brightness, r, g, b = pix_list[i]
-
             data.append(0b11100000 | brightness)  # Assuming that the brightness should be used with bitwise OR
             data.extend([r, g, b])  # Adding the rgb values into data
 

@@ -16,9 +16,9 @@ async def main():
     #     ds_control.set_solid_rgb(blue_pix)
     #     print("Blue")
     #     time.sleep(5)
-    # ds_control.set_solid_rgb(DotStar_Colours.blue)
-    await ds_control.fire_laser(Pixel_Colours.get("blue"), Pixel_Colours.get("red"), 3, 10, 1)
     await ds_control.set_solid_rgb(Pixel_Colours.get("off"))
+    # await ds_control.fire_laser(Pixel_Colours.get("blue"), Pixel_Colours.get("red"), 3, 10, 1)
+    # await ds_control.set_solid_rgb(Pixel_Colours.get("off"))
 
 if __name__ == '__main__':
     asyncio.run(main())
