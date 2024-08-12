@@ -39,23 +39,27 @@ async def star_control(ds_control):
             break  # or "continue" if we want to keep looping
         await asyncio.sleep(0.1)
 
+async def message_run(ds_control):
+    ds_control.state=DCState.OFF
 
-async def msg_control(ds_control):
-    logger.info("msg Control")
-    ds_control.state = DCState.ON
-    await asyncio.sleep(10)
-    logger.info("Turn off")
-    ds_control.state = DCState.OFF
+
+async def star_message(ds_control):
+    logger.info("Star Msg Control")
     while True:
-        await asyncio.sleep(1)
-
+        print("ping2")
+        try:
+            await message_run(ds_control)
+        except Exception as e:
+            logger.error(f"Error in star_msg_control: {e}")
+            break  # or "continue" if we want to keep looping
+        await asyncio.sleep(0.1)
 
 async def main():
     logger.info("In Main")
 
     ds_control = DotStar(NUM_PIXELS)
 
-    await asyncio.gather(msg_control(ds_control),star_control(ds_control))
+    await asyncio.gather(star_message(ds_control), star_control(ds_control))
 
 
 if __name__ == '__main__':

@@ -158,11 +158,12 @@ class DotStar:
         """
         This is the control loop for the DotStar Controller
         """
-        print(f"Diag: {self.diag}")
-        self.diag += 1
+        # print(f"Diag: {self.diag}")
+        # self.diag += 1
 
         if self.state == DCState.OFF:
             await self.set_solid_rgb(Pixel_Colours.get("off"))
         if self.state == DCState.ON:
             self.rainbow = True
+            # need to spin the rainbow
             await self.scroll_rainbow(10)
