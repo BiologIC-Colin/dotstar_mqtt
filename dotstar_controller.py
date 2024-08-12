@@ -1,5 +1,7 @@
 import asyncio
+import colorsys
 import sys
+import time
 from dataclasses import dataclass
 import logging
 import spidev
@@ -42,6 +44,9 @@ class DotStar:
             data.append(0x00)
         return data
 
+    def _hsl_to_rgb(self, h, s, l):
+        return [int(c * 255) for c in colorsys.hls_to_rgb(h, l, s)]
+
     async def set_solid_rgb(self, pixel: DotStar_Pixel):
 
         # Create an empty payload
@@ -79,6 +84,52 @@ class DotStar:
             index += 1
             await asyncio.sleep(delay)
 
+    async def set_static_rainbow(self):
+        pix_list = []
+        brightness = 10
+
+        # Loop over all pixels
+        for i in range(self.pixel_count):
+            # Calculate hue for each pixel, distribute hues over full circle (0-1 range)
+            hue = i / self.pixel_count
+
+            # Convert HSL to RGB
+            pix = DotStar_Pixel(0, 0, 0, 0)
+            pix.a = brightness
+            pix.r, pix.g, pix.b = self._hsl_to_rgb(hue, 1.0, 0.5)
+
+            # Append to pixel list
+            pix_list.append(pix.get_pixel())
+
+        await self._update_strip(pix_list)
+
+    async def scroll_rainbow(self, speed: int):
+        update_rate = 30
+        steps_per_cycle = self.pixel_count  # One full cycle amounts to scrolling across all the pixels once
+        update_interval = 1 / update_rate  # The time interval between each update
+
+        step = 0  # Starting step
+
+        while True:
+            pix_list = []
+            brightness = 10
+
+            hue_shift = step / steps_per_cycle  # Calculate hue shift based on current step
+
+            for i in range(self.pixel_count):
+                hue = (i / self.pixel_count + hue_shift) % 1  # Derive hue value with shift
+                pix = DotStar_Pixel(0, 0, 0, 0)
+                pix.a = brightness
+                pix.r, pix.g, pix.b = self._hsl_to_rgb(hue, 1.0, 0.5)
+
+                # Append to pixel list
+                pix_list.append(pix.get_pixel())
+
+            # Update strip and wait for the next update
+            await self._update_strip(pix_list)
+            await asyncio.sleep(update_interval)
+
+            step = (step + speed / update_rate) % steps_per_cycle  # Advance the step for next cycle
 
     async def _update_strip(self, pix_list):
         """
@@ -93,3 +144,10 @@ class DotStar:
         data = self._add_EoF(data)
         self.spi.xfer2(data)
         data.clear()
+
+    async def run(self):
+        """
+        This is the control loop for the DotStar Controller
+        """
+        await self.set_solid_rgb(Pixel_Colours.get("off"))
+        await self.scroll_rainbow(10)
